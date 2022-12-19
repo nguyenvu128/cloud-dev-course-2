@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { Http2ServerResponse } from 'http2';
 
 (async () => {
 
@@ -38,8 +39,21 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   } );
   
   app.get('/filteredimage', async (req, res) => {
-    const imageUrl = req.query.image_url
-    console.log("🚀 ~ file: server.ts:42 ~ app.get ~ imageUrl", imageUrl)
+    try {
+      const imageUrl = req.query.image_url
+      if(!imageUrl) {
+        res.sendStatus(404)
+        return;
+      }
+
+      const filteredPath = await filterImageFromURL(imageUrl)
+      console.log("filteredPath: ", filteredPath);
+      res.sendFile(filteredPath)
+      res.on('finish', () => deleteLocalFiles([filteredPath]))
+    } catch (error) {
+      console.log(error)
+      res.sendStatus(500)
+    }
   })
 
   // Start the Server
