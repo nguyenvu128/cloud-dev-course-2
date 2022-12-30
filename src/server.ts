@@ -40,14 +40,13 @@ import { Http2ServerResponse } from 'http2';
   
   app.get('/filteredimage', async (req, res) => {
     try {
-      const imageUrl = req.query.image_url
+      const imageUrl = req.query.image_url as string
       if(!imageUrl) {
         res.sendStatus(404)
         return;
       }
 
       const filteredPath = await filterImageFromURL(imageUrl)
-      console.log("filteredPath: ", filteredPath);
       res.sendFile(filteredPath)
       res.on('finish', () => deleteLocalFiles([filteredPath]))
     } catch (error) {
